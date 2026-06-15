@@ -550,7 +550,7 @@ function calcHousing() {
 
   drawBarChart('houseChartDemand', areaData, labels, '#5c7a5e');
   showToast('Housing calculations updated');
-}
+}   
 
 /* ─────────────────────────────────────────
    ENTERPRISE VALUATION
