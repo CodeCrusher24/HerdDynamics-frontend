@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HerdDynamics — Goat Farm Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     AUTH SCREENS
+═══════════════════════════════════════ -->
+<div id="authPage" class="auth-page">
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="brand-logomark">
+        <div class="brand-icon">🐐</div>
+        <div class="brand-wordmark">Herd<span>Dynamics</span></div>
+      </div>
+      <p class="brand-tagline">Goat Farm Simulator &amp; Forecasting System</p>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginCard" class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Sign in to your farm account</p>
+      <div id="loginMsg" class="msg-bar"></div>
+      <div class="field-group">
+        <label>Email address</label>
+        <input type="email" id="loginEmail" placeholder="you@farm.com" autocomplete="email"/>
+      </div>
+      <div class="field-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-auth" onclick="doLogin()">Sign in</button>
+      <p class="auth-toggle">No account? <a onclick="showSignup()">Create one</a></p>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signupCard" class="auth-card" style="display:none">
+      <h2>Create account</h2>
+      <p class="auth-sub">Start simulating your goat farm</p>
+      <div id="signupMsg" class="msg-bar"></div>
+      <div class="field-group">
+        <label>Full name</label>
+        <input type="text" id="signupName" placeholder="e.g. Ravi Kumar" autocomplete="name"/>
+      </div>
+      <div class="field-group">
+        <label>Email address</label>
+        <input type="email" id="signupEmail" placeholder="you@farm.com" autocomplete="email"/>
+      </div>
+      <div class="field-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password"/>
+      </div>
+      <button class="btn-auth" onclick="doSignup()">Create account</button>
+      <p class="auth-toggle">Already have an account? <a onclick="showLogin()">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     DASHBOARD SHELL
+═══════════════════════════════════════ -->
+<div id="appShell" style="display:none">
+
+  <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Open menu">&#9776;</button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-icon">🐐</div>
+      <div class="sb-name">Herd<span>Dynamics</span></div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-section-label">Overview</div>
+      <button class="nav-btn active" data-panel="dashboard" onclick="navigate(this)">
+        <span class="nb-icon">⊞</span> Dashboard
+      </button>
+
+      <div class="sb-section-label">Modules</div>
+      <button class="nav-btn" data-panel="herdconfig" onclick="navigate(this)">
+        <span class="nb-icon">🐐</span> Herd Configuration
+      </button>
+      <button class="nav-btn" data-panel="simulation" onclick="navigate(this)">
+        <span class="nb-icon">📊</span> Herd Simulation
+      </button>
+      <button class="nav-btn" data-panel="feed" onclick="navigate(this)">
+        <span class="nb-icon">🌾</span> Feed Forecasting
+      </button>
+      <button class="nav-btn" data-panel="housing" onclick="navigate(this)">
+        <span class="nb-icon">🏚</span> Housing Planning
+      </button>
+      <button class="nav-btn" data-panel="valuation" onclick="navigate(this)">
+        <span class="nb-icon">💰</span> Enterprise Valuation
+      </button>
+      <button class="nav-btn" data-panel="financial" onclick="navigate(this)">
+        <span class="nb-icon">📈</span> Financial Analysis
+      </button>
+      <button class="nav-btn" data-panel="reports" onclick="navigate(this)">
+        <span class="nb-icon">📄</span> Reports
+      </button>
+
+      <div class="sb-section-label">Account</div>
+      <button class="nav-btn" data-panel="settings" onclick="navigate(this)">
+        <span class="nb-icon">⚙</span> Settings
+      </button>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sbAvatar">R</div>
+        <div class="user-meta">
+          <div class="um-name" id="sbName">Ravi Kumar</div>
+          <div class="um-email" id="sbEmail">ravi@farm.com</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">
+        <span>↩</span> Sign out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main" id="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="tb-title" id="tbTitle">Dashboard</div>
+        <div class="tb-crumb" id="tbCrumb">HerdDynamics / Overview</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-badge" id="tbScenario">Default Scenario</div>
+        <button class="tb-icon-btn" title="Notifications">🔔</button>
+      </div>
+    </header>
+
+    <div class="content" id="content">
+
+      <!-- ════════════════ DASHBOARD ════════════════ -->
+      <section class="panel active" id="panel-dashboard">
+
+        <div class="panel-header">
+          <h1>Farm Overview</h1>
+          <p>Snapshot of your current simulation results</p>
+        </div>
+
+        <!-- Stat cards row -->
+        <div class="stat-grid" id="dashStats">
+          <div class="stat-card" data-target="simulation">
+            <div class="sc-eyebrow">Total Goats</div>
+            <div class="sc-value" id="dc-total">248</div>
+            <div class="sc-foot">across all categories</div>
+          </div>
+          <div class="stat-card accent-green" data-target="herdconfig">
+            <div class="sc-eyebrow">Breeder Females</div>
+            <div class="sc-value" id="dc-females">142</div>
+            <div class="sc-foot">retained breeders</div>
+          </div>
+          <div class="stat-card accent-blue" data-target="herdconfig">
+            <div class="sc-eyebrow">Breeder Males</div>
+            <div class="sc-value" id="dc-males">8</div>
+            <div class="sc-foot">1 per 20 females</div>
+          </div>
+          <div class="stat-card accent-amber" data-target="simulation">
+            <div class="sc-eyebrow">Market Males</div>
+            <div class="sc-value" id="dc-market">76</div>
+            <div class="sc-foot">available for sale</div>
+          </div>
+          <div class="stat-card accent-rust" data-target="feed">
+            <div class="sc-eyebrow">Monthly Feed Cost</div>
+            <div class="sc-value" id="dc-feed">₹38,400</div>
+            <div class="sc-foot">at current rates</div>
+          </div>
+          <div class="stat-card accent-sage" data-target="housing">
+            <div class="sc-eyebrow">Housing Required</div>
+            <div class="sc-value" id="dc-housing">312 m²</div>
+            <div class="sc-foot">total floor area</div>
+          </div>
+          <div class="stat-card accent-gold" data-target="valuation">
+            <div class="sc-eyebrow">Herd Value</div>
+            <div class="sc-value" id="dc-value">₹8.4L</div>
+            <div class="sc-foot">estimated market value</div>
+          </div>
+          <div class="stat-card accent-teal" data-target="financial">
+            <div class="sc-eyebrow">Annual Net Profit</div>
+            <div class="sc-value" id="dc-profit">₹1.2L</div>
+            <div class="sc-foot">projected this year</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="chart-row">
+          <div class="chart-card wide">
+            <div class="cc-header">
+              <div class="cc-title">Population Growth</div>
+              <div class="cc-subtitle">Projected over 5 years</div>
+            </div>
+            <div class="chart-area" id="chartPopulation"></div>
+          </div>
+          <div class="chart-card">
+            <div class="cc-header">
+              <div class="cc-title">Herd Composition</div>
+              <div class="cc-subtitle">By category</div>
+            </div>
+            <div class="chart-area donut-wrap" id="chartComposition"></div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="cc-header">
+              <div class="cc-title">Feed Cost Trend</div>
+              <div class="cc-subtitle">Monthly ₹</div>
+            </div>
+            <div class="chart-area" id="chartFeed"></div>
+          </div>
+          <div class="chart-card">
+            <div class="cc-header">
+              <div class="cc-title">Valuation Trend</div>
+              <div class="cc-subtitle">Herd value (₹)</div>
+            </div>
+            <div class="chart-area" id="chartValuation"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ════════════════ HERD CONFIGURATION ════════════════ -->
+      <section class="panel" id="panel-herdconfig">
+        <div class="panel-header">
+          <h1>Herd Configuration</h1>
+          <p>Set initial farm inputs and breeding parameters</p>
+        </div>
+        <div class="two-col-layout">
+          <div class="card">
+            <div class="card-title">Initial Herd Setup</div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Initial Female Goats</label>
+                <input type="number" id="cfg-females" value="10" min="1"/>
+              </div>
+              <div class="form-field">
+                <label>Initial Male Goats</label>
+                <input type="number" id="cfg-males" value="10" min="1"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Simulation Duration (years)</label>
+                <input type="number" id="cfg-duration" value="5" min="1" max="20"/>
+              </div>
+              <div class="form-field">
+                <label>Breeding Interval (months)</label>
+                <input type="number" id="cfg-interval" value="7" min="4" max="12"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Reproduction Rate</label>
+                <select id="cfg-repro">
+                  <option value="1">Low — 1 kid per birth</option>
+                  <option value="2" selected>Medium — 2 kids per birth</option>
+                  <option value="3">High — 3 kids per birth</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Sellable Age (months)</label>
+                <input type="number" id="cfg-sellage" value="8" min="4"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field full">
+                <label>Male-to-Female Breeding Ratio (1 male per N females)</label>
+                <input type="number" id="cfg-ratio" value="20" min="5" max="50"/>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="saveConfig()">Save configuration</button>
+              <button class="btn-outline" onclick="resetConfig()">Reset to defaults</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Current Herd Summary</div>
+            <div class="summary-list" id="configSummary">
+              <div class="sl-row"><span>Total females</span><strong id="cs-f">10</strong></div>
+              <div class="sl-row"><span>Total males</span><strong id="cs-m">10</strong></div>
+              <div class="sl-row"><span>Breeder males needed</span><strong id="cs-bm">1</strong></div>
+              <div class="sl-row"><span>Market males</span><strong id="cs-mm">9</strong></div>
+              <div class="sl-row"><span>Sim duration</span><strong id="cs-dur">5 years</strong></div>
+              <div class="sl-row"><span>Breeding interval</span><strong id="cs-int">7 months</strong></div>
+              <div class="sl-row"><span>Reproduction rate</span><strong id="cs-rep">Medium (×2)</strong></div>
+              <div class="sl-row"><span>Breeding ratio</span><strong id="cs-rat">1 : 20</strong></div>
+            </div>
+            <div class="info-box">
+              <strong>Inbreeding Prevention</strong> — The engine automatically blocks Parent × Child, Sibling × Sibling, and Grandparent × Grandchild pairings. External breeder males are introduced whenever no legal pairing exists.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ SIMULATION ════════════════ -->
+      <section class="panel" id="panel-simulation">
+        <div class="panel-header between">
+          <div>
+            <h1>Herd Simulation Engine</h1>
+            <p>Project population growth with lineage tracking and inbreeding prevention</p>
+          </div>
+          <button class="btn-primary" onclick="runSimulation()">▶ Run simulation</button>
+        </div>
+
+        <div class="stat-grid four">
+          <div class="stat-card"><div class="sc-eyebrow">Total Goats</div><div class="sc-value" id="sim-total">—</div></div>
+          <div class="stat-card accent-green"><div class="sc-eyebrow">Breeder Females</div><div class="sc-value" id="sim-females">—</div></div>
+          <div class="stat-card accent-blue"><div class="sc-eyebrow">Breeder Males</div><div class="sc-value" id="sim-bmales">—</div></div>
+          <div class="stat-card accent-amber"><div class="sc-eyebrow">Market Males</div><div class="sc-value" id="sim-mmales">—</div></div>
+          <div class="stat-card accent-rust"><div class="sc-eyebrow">External Males Introduced</div><div class="sc-value" id="sim-ext">—</div></div>
+          <div class="stat-card accent-gold"><div class="sc-eyebrow">Breeding Cycles</div><div class="sc-value" id="sim-cycles">—</div></div>
+          <div class="stat-card accent-teal"><div class="sc-eyebrow">Kids Born (total)</div><div class="sc-value" id="sim-kids">—</div></div>
+          <div class="stat-card accent-sage"><div class="sc-eyebrow">Pairs Blocked (inbreed)</div><div class="sc-value" id="sim-blocked">—</div></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-card wide">
+            <div class="cc-header"><div class="cc-title">Population Growth by Year</div></div>
+            <div class="chart-area tall" id="simChartPop"></div>
+          </div>
+          <div class="chart-card">
+            <div class="cc-header"><div class="cc-title">Gender Distribution</div></div>
+            <div class="chart-area donut-wrap" id="simChartGender"></div>
+          </div>
+        </div>
+
+        <div class="card mt">
+          <div class="card-title">Year-by-Year Breakdown</div>
+          <div class="table-wrap">
+            <table class="data-table" id="simTable">
+              <thead>
+                <tr><th>Year</th><th>Total</th><th>Breeder Females</th><th>Breeder Males</th><th>Market Males</th><th>Ext. Males</th><th>Kids Born</th></tr>
+              </thead>
+              <tbody id="simTableBody">
+                <tr><td colspan="7" class="empty-row">Run a simulation to see results</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ FEED FORECASTING ════════════════ -->
+      <section class="panel" id="panel-feed">
+        <div class="panel-header">
+          <h1>Feed Forecasting</h1>
+          <p>Calculate daily, monthly, and annual feed requirements and costs</p>
+        </div>
+        <div class="two-col-layout">
+          <div class="card">
+            <div class="card-title">Feed Cost Inputs</div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Feed Cost Per Kg (₹)</label>
+                <input type="number" id="feed-cost" value="25" min="1" step="0.5"/>
+              </div>
+              <div class="form-field">
+                <label>Feed Conversion Ratio (kg/goat/day)</label>
+                <input type="number" id="feed-fcr" value="2.5" min="0.5" step="0.1"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Kids FCR (kg/kid/day)</label>
+                <input type="number" id="feed-kids-fcr" value="0.8" min="0.1" step="0.1"/>
+              </div>
+              <div class="form-field">
+                <label>Breeder Male FCR (kg/male/day)</label>
+                <input type="number" id="feed-male-fcr" value="3.0" min="0.5" step="0.1"/>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="calcFeed()">Calculate feed</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Feed Requirements (current herd)</div>
+            <div class="summary-list">
+              <div class="sl-row"><span>Daily feed required</span><strong id="feed-daily-kg">—</strong></div>
+              <div class="sl-row"><span>Monthly feed required</span><strong id="feed-monthly-kg">—</strong></div>
+              <div class="sl-row"><span>Annual feed required</span><strong id="feed-annual-kg">—</strong></div>
+              <div class="sl-divider"></div>
+              <div class="sl-row accent"><span>Daily feed cost</span><strong id="feed-daily-cost">—</strong></div>
+              <div class="sl-row accent"><span>Monthly feed cost</span><strong id="feed-monthly-cost">—</strong></div>
+              <div class="sl-row accent"><span>Annual feed cost</span><strong id="feed-annual-cost">—</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-row mt">
+          <div class="chart-card wide">
+            <div class="cc-header"><div class="cc-title">Feed Demand Growth (kg/day)</div></div>
+            <div class="chart-area" id="feedChartDemand"></div>
+          </div>
+          <div class="chart-card">
+            <div class="cc-header"><div class="cc-title">Annual Feed Cost Trend (₹)</div></div>
+            <div class="chart-area" id="feedChartCost"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ HOUSING PLANNING ════════════════ -->
+      <section class="panel" id="panel-housing">
+        <div class="panel-header">
+          <h1>Housing Planning</h1>
+          <p>Calculate space requirements and estimated construction costs</p>
+        </div>
+        <div class="two-col-layout">
+          <div class="card">
+            <div class="card-title">Space &amp; Cost Inputs</div>
+            <div class="form-row">
+              <div class="form-field full">
+                <label>Construction Cost Per m² (₹)</label>
+                <input type="number" id="house-cost" value="3500" min="500" step="100"/>
+              </div>
+            </div>
+            <div class="card-title small mt">Space Per Category (m²)</div>
+            <div class="form-row">
+              <div class="form-field"><label>Kids</label><input type="number" id="hs-kids" value="0.5" min="0.1" step="0.1"/></div>
+              <div class="form-field"><label>Breeder Female</label><input type="number" id="hs-female" value="1.5" min="0.5" step="0.1"/></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Breeder Male</label><input type="number" id="hs-bmale" value="2.0" min="0.5" step="0.1"/></div>
+              <div class="form-field"><label>Market Male</label><input type="number" id="hs-mmale" value="1.5" min="0.5" step="0.1"/></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="calcHousing()">Calculate housing</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Housing Requirements</div>
+            <div class="summary-list">
+              <div class="sl-row"><span>Current area required</span><strong id="hs-current">—</strong></div>
+              <div class="sl-row"><span>Area in 1 year</span><strong id="hs-1yr">—</strong></div>
+              <div class="sl-row"><span>Area in 3 years</span><strong id="hs-3yr">—</strong></div>
+              <div class="sl-row"><span>Area in 5 years</span><strong id="hs-5yr">—</strong></div>
+              <div class="sl-divider"></div>
+              <div class="sl-row accent"><span>Expansion needed</span><strong id="hs-expand">—</strong></div>
+              <div class="sl-row accent"><span>Estimated build cost</span><strong id="hs-buildcost">—</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-row mt">
+          <div class="chart-card wide">
+            <div class="cc-header"><div class="cc-title">Housing Demand Forecast (m²)</div></div>
+            <div class="chart-area" id="houseChartDemand"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ ENTERPRISE VALUATION ════════════════ -->
+      <section class="panel" id="panel-valuation">
+        <div class="panel-header">
+          <h1>Enterprise Valuation</h1>
+          <p>Estimate total herd value at current and future stages</p>
+        </div>
+        <div class="two-col-layout">
+          <div class="card">
+            <div class="card-title">Market Price Inputs</div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Breeder Female Price (₹)</label>
+                <input type="number" id="val-female" value="8000" min="1000" step="500"/>
+              </div>
+              <div class="form-field">
+                <label>Breeder Male Price (₹)</label>
+                <input type="number" id="val-bmale" value="10000" min="1000" step="500"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Market Male Price (₹)</label>
+                <input type="number" id="val-mmale" value="5500" min="500" step="250"/>
+              </div>
+              <div class="form-field">
+                <label>Kid Price (₹)</label>
+                <input type="number" id="val-kid" value="2500" min="500" step="250"/>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="calcValuation()">Calculate valuation</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Herd Valuation</div>
+            <div class="summary-list">
+              <div class="sl-row"><span>Current herd value</span><strong id="vl-now">—</strong></div>
+              <div class="sl-row accent"><span>1-year valuation</span><strong id="vl-1yr">—</strong></div>
+              <div class="sl-row accent"><span>3-year valuation</span><strong id="vl-3yr">—</strong></div>
+              <div class="sl-row accent"><span>5-year valuation</span><strong id="vl-5yr">—</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-row mt">
+          <div class="chart-card wide">
+            <div class="cc-header"><div class="cc-title">Herd Value Growth (₹)</div></div>
+            <div class="chart-area" id="valChartGrowth"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ FINANCIAL ANALYSIS ════════════════ -->
+      <section class="panel" id="panel-financial">
+        <div class="panel-header">
+          <h1>Financial Analysis</h1>
+          <p>Projected profit &amp; loss — quarterly, half-yearly, and annual</p>
+        </div>
+
+        <div class="stat-grid four">
+          <div class="stat-card accent-green"><div class="sc-eyebrow">Annual Revenue</div><div class="sc-value" id="fin-revenue">—</div><div class="sc-foot">market male sales</div></div>
+          <div class="stat-card accent-rust"><div class="sc-eyebrow">Annual Expenses</div><div class="sc-value" id="fin-expenses">—</div><div class="sc-foot">feed + housing + males</div></div>
+          <div class="stat-card accent-gold"><div class="sc-eyebrow">Annual Net Profit</div><div class="sc-value" id="fin-profit">—</div></div>
+          <div class="stat-card accent-teal"><div class="sc-eyebrow">Profit Margin</div><div class="sc-value" id="fin-margin">—</div></div>
+        </div>
+
+        <div class="chart-row mt">
+          <div class="chart-card">
+            <div class="cc-header"><div class="cc-title">Revenue vs Expenses</div></div>
+            <div class="chart-area" id="finChartRevExp"></div>
+          </div>
+          <div class="chart-card">
+            <div class="cc-header"><div class="cc-title">Net Profit by Year</div></div>
+            <div class="chart-area" id="finChartProfit"></div>
+          </div>
+        </div>
+
+        <div class="card mt">
+          <div class="card-title">Annual P&amp;L Statement</div>
+          <div class="table-wrap">
+            <table class="data-table" id="finTable">
+              <thead>
+                <tr><th>Year</th><th>Revenue (₹)</th><th>Feed Cost</th><th>Housing Cost</th><th>Ext. Male Cost</th><th>Total Expenses</th><th>Net Profit</th></tr>
+              </thead>
+              <tbody id="finTableBody">
+                <tr><td colspan="7" class="empty-row">Run the simulation first, then calculate financials</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ REPORTS ════════════════ -->
+      <section class="panel" id="panel-reports">
+        <div class="panel-header">
+          <h1>Reports</h1>
+          <p>Export simulation results in your preferred format</p>
+        </div>
+        <div class="reports-grid">
+          <div class="report-card" onclick="downloadReport('herd')">
+            <div class="rc-icon">🐐</div>
+            <div class="rc-title">Herd Growth Report</div>
+            <div class="rc-desc">Population projections and generation breakdown</div>
+            <div class="rc-actions">
+              <button class="btn-sm-outline">PDF</button>
+              <button class="btn-sm-outline">Excel</button>
+            </div>
+          </div>
+          <div class="report-card" onclick="downloadReport('feed')">
+            <div class="rc-icon">🌾</div>
+            <div class="rc-title">Feed Forecast Report</div>
+            <div class="rc-desc">Feed requirements and cost projections</div>
+            <div class="rc-actions">
+              <button class="btn-sm-outline">PDF</button>
+              <button class="btn-sm-outline">Excel</button>
+            </div>
+          </div>
+          <div class="report-card" onclick="downloadReport('housing')">
+            <div class="rc-icon">🏚</div>
+            <div class="rc-title">Housing Forecast Report</div>
+            <div class="rc-desc">Space requirements and construction costs</div>
+            <div class="rc-actions">
+              <button class="btn-sm-outline">PDF</button>
+              <button class="btn-sm-outline">Excel</button>
+            </div>
+          </div>
+          <div class="report-card" onclick="downloadReport('valuation')">
+            <div class="rc-icon">💰</div>
+            <div class="rc-title">Valuation Report</div>
+            <div class="rc-desc">Current and projected herd market value</div>
+            <div class="rc-actions">
+              <button class="btn-sm-outline">PDF</button>
+              <button class="btn-sm-outline">Excel</button>
+            </div>
+          </div>
+          <div class="report-card" onclick="downloadReport('financial')">
+            <div class="rc-icon">📈</div>
+            <div class="rc-title">Financial Report</div>
+            <div class="rc-desc">Full P&amp;L with revenue, expenses, and profit</div>
+            <div class="rc-actions">
+              <button class="btn-sm-outline">PDF</button>
+              <button class="btn-sm-outline">Excel</button>
+            </div>
+          </div>
+        </div>
+        <div class="info-box mt">
+          <strong>Note:</strong> Run the simulation and calculate all modules before exporting. Reports use the most recent calculation data from your session.
+        </div>
+      </section>
+
+      <!-- ════════════════ SETTINGS ════════════════ -->
+      <section class="panel" id="panel-settings">
+        <div class="panel-header">
+          <h1>Settings</h1>
+          <p>Manage your account, farm profile, and preferences</p>
+        </div>
+        <div class="two-col-layout">
+          <div class="card">
+            <div class="card-title">Farm Profile</div>
+            <div class="form-row">
+              <div class="form-field full">
+                <label>Farm name</label>
+                <input type="text" placeholder="e.g. Sunrise Goat Farm"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field full">
+                <label>Location</label>
+                <input type="text" placeholder="Village, District, State"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>Total land (acres)</label>
+                <input type="number" placeholder="0"/>
+              </div>
+              <div class="form-field">
+                <label>Primary breed</label>
+                <select>
+                  <option>Boer</option>
+                  <option>Beetal</option>
+                  <option>Sirohi</option>
+                  <option>Black Bengal</option>
+                  <option>Jamunapari</option>
+                  <option>Mixed</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary">Save profile</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Account</div>
+            <div class="form-row">
+              <div class="form-field full">
+                <label>Display name</label>
+                <input type="text" id="set-name" placeholder="Your name"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field full">
+                <label>Email</label>
+                <input type="email" id="set-email" placeholder="you@farm.com" disabled style="opacity:0.55"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>New password</label>
+                <input type="password" placeholder="Leave blank to keep current"/>
+              </div>
+              <div class="form-field">
+                <label>Confirm password</label>
+                <input type="password" placeholder="Re-enter new password"/>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary">Update account</button>
+              <button class="btn-danger" onclick="doLogout()">Sign out</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt">
+          <div class="card-title">Preferences</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Currency</label>
+              <select><option>INR (₹)</option><option>USD ($)</option><option>EUR (€)</option></select>
+            </div>
+            <div class="form-field">
+              <label>Weight unit</label>
+              <select><option>Kilograms (kg)</option><option>Pounds (lb)</option></select>
+            </div>
+            <div class="form-field">
+              <label>Area unit</label>
+              <select><option>Square metres (m²)</option><option>Square feet (ft²)</option></select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-outline">Save preferences</button>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /appShell -->
+<!-- ═══════════════════════════════════════
+     SESSION CONFLICT MODAL
+═══════════════════════════════════════ -->
+<div id="sessionConflictModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h3 class="modal-title">Already signed in elsewhere</h3>
+    <p class="modal-body">
+      Your account is active on another device or browser.
+      What would you like to do?
+    </p>
+    <button class="btn-auth" style="margin-bottom:0.65rem" onclick="doForceLogin()">
+      Sign in here &amp; sign out other device
+    </button>
+    <button class="modal-cancel-btn" onclick="cancelConflict()">
+      Cancel — keep using the other device
+    </button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
